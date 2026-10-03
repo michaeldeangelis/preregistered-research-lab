@@ -46,6 +46,7 @@ from . import cite
 from . import envs
 from . import fdr
 from . import sandbox
+from . import teams
 from . import questions as Q
 from . import repo as RP
 from . import report as R
@@ -239,9 +240,10 @@ class Kernel:
         if after is None:
             return None
         rel = str(Q.qdir(self.p, q["id"]).relative_to(self.p.root))
-        if self.parallel():  # other questions change concurrently; sandbox-exec confines each worker to its folder
+        if sandbox.available():  # other questions and the lead change files concurrently; the sandbox confines workers
             rel = str(self.p.questions_dir.relative_to(self.p.root))
-        allowed = (rel + "/", "qbank/spend.jsonl", "qbank/digest.md", "qbank/fdr.jsonl")
+        allowed = (rel + "/", "qbank/spend.jsonl", "qbank/digest.md", "qbank/fdr.jsonl", "qbank/fdr_batches.jsonl",
+                   "qbank/lead/", "qbank/NEEDS_MIKE.md", "qbank/run.pid", "qbank/run.log", "qbank/ledger.md")
         return sorted(p for p in after - before if not p.startswith(allowed))
 
     # ---- LLM stage runner ----
@@ -351,6 +353,11 @@ class Kernel:
         if not self._attempt(q, stage):
             return None
         schema = json.loads((PKG / "schemas" / f"{stage}.json").read_text())
+        if teams.TEAMS.get(stage):  # the stage worker leads a team; its output records each specialist's finding
+            schema["properties"]["team"] = teams.TEAM_SCHEMA
+            schema["required"] = [*schema["required"], "team"]
+            prompt += teams.instructions(stage)
+            tools = [*tools, "Agent"]
         previous = q.get("stage_errors", {}).get(stage)
         if previous:
             prompt += f"\n\nYour previous attempt failed validation or errored: {previous}\nFix that this time."
@@ -363,6 +370,7 @@ class Kernel:
             disallowed_tools=[f"Read(/{self.p.abs(h)}/**)" for h in self.p.holdout] + (denied or []),
             add_dirs=[self.p.abs(self.p.core_facility)] if self.p.core_facility else [],
             sandbox=self._worker_profile(q, stage),
+            agents=teams.agents_for(stage),
             env={"TMPDIR": str(self._tmpdir(q, stage)), "CLAUDE_CODE_TMPDIR": str(self._tmpdir(q, stage)),
                  "CLAUDE_CONFIG_DIR": str(self._config_dir(q, "review" if stage == "review" else "author"))},
         )
@@ -392,6 +400,11 @@ class Kernel:
         errors = validate(res.output, schema)
         if errors:
             self._fail(q, stage, "schema: " + "; ".join(errors[:8]), session=res.session_id)
+            return None
+        missing = teams.missing_roles(stage, res.output)
+        if missing:
+            self._fail(q, stage, f"team: no finding recorded from {', '.join(missing)}; consult every specialist",
+                       session=res.session_id)
             return None
         self._done(q, stage, cost_usd=res.cost_usd, session=res.session_id)
         return res.output

@@ -1,6 +1,6 @@
 # Preregistered research lab
 
-I built a lab that takes a list of research questions and tests each one without me in the loop. Language-model workers do the judgement work: they check the literature, write the test, write the analysis and review it. A plain Python kernel runs the code and decides every verdict from a rule written before any data was touched. In six live runs on small bundled datasets it passed one real effect after checking it on held-out data, and it refused five analyses that were weaker or broken. It runs on macOS only.
+I built a lab that takes a list of research questions and tests each one without me in the loop. It runs as agent teams: a director runs a lead for every project, and every stage of every question is a small team of a lead and specialists. They check the literature, decide what to test, write the test and the analysis, and review it. A plain Python kernel runs the code and decides every verdict from a rule written before any data was touched. In six live runs on small bundled datasets it passed one real effect after checking it on held-out data, and it refused five analyses that were weaker or broken. It runs on macOS only.
 
 ## Abstract
 
@@ -29,6 +29,14 @@ The breast cancer question (does a 30-feature model beat mean radius alone by mo
 
 An independent reviewer read the code and wrote attacks against it in three rounds, finding 13, 10 and 8 defects. The first round found that the sandbox allowed writes anywhere outside the project, that renaming a hidden file made it readable, that the reviewer could read the author's transcripts, and that the online correction admitted only questions that had already passed. The second found writable shell caches and Claude settings, symlinks that redirected the sandbox rules, and predictable temporary file names. The third found credentials still reachable through the environment and the SSH agent, and that one process could read another's environment, which is why worker stages and analysis runs never overlap. Every attack is in `tests/test_attacks.py`.
 
+## Agent teams
+
+The lab has three tiers of agents above the kernel. A lab director runs on a loop across all projects. Each cycle it runs every project's lead, collects anything only I can do into one list, and checks each new pass against its records. A project lead, with an analyst, reads the project's state and decides which questions to approve, which to park, which blocked ones deserve one more try, what to prioritise and when to start a run. The kernel carries out those decisions only within a charter I set once per project, and logs every refusal. It caps approvals and work in flight, never approves a question that needs a setting I have not turned on, never retries an integrity failure, and publishes only private repositories, only when the charter allows it.
+
+Every worker stage is itself a team. The stage lead must consult its specialists and record what each found, or the attempt fails. Triage has a scout and a skeptic, literature review a contrarian, the rule a statistician, the script a tester, review a code reviewer and a statistics reviewer, and the write-up a fact-checker. Specialists run inside their lead's sandbox and permissions. In a live dry run on a 123-question pharmacology project, the lead proposed three approvals that each unblock follow-on questions and parked two with reasons. Its analyst noticed the status packet showed only 80 of the 123 waiting questions, which I fixed.
+
+What stays with me: paying for compute, credentials and data accounts, project settings and lead charters, and making anything public.
+
 ## Write-ups
 
 Every finished question gets a repository folder in the style of my published research repos: a lead paragraph, a plain-English abstract, a result section, reproduce steps, `hypothesis.md`, an `experiments.md` ledger, the result records, the frozen analysis code with pinned requirements, `CITATION.cff` and an MIT license. A worker writes the prose; the kernel checks the style and builds the folder from its own records, so the numbers and the verdict cannot drift. `lab publish` creates the GitHub repository, private unless asked otherwise.
@@ -52,6 +60,7 @@ bin/lab import --root ~/lab/demo questions.md      # one "- question [type:compu
 bin/lab approve --root ~/lab/demo --ids Q-0001     # or --batch <name>
 bin/lab run --root ~/lab/demo
 bin/lab show --root ~/lab/demo Q-0001
+bin/lab lead --root ~/lab/demo --dry-run          # what the project lead would do now
 ```
 
 ## Layout
@@ -64,10 +73,12 @@ bin/lab show --root ~/lab/demo Q-0001
 | `rlab/fdr.py` | Benjamini-Hochberg and LORD++ |
 | `rlab/cite.py` | Resolves cited PMIDs, DOIs and arXiv ids and checks titles |
 | `rlab/repo.py` | Builds and publishes the per-question repository |
+| `rlab/lead.py` | The project lead: status packet, one cycle, charter-checked actions |
+| `rlab/teams.py` | The specialists of each stage team |
 | `runtime/rlab_split.py` | The unit splitter analysis scripts import |
 | `prompts/`, `schemas/` | Instructions and output contracts for each worker stage |
 | `docs/design.md` | Each design decision, why, and how to reverse it |
-| `tests/` | 89 tests, including every attack from the review rounds |
+| `tests/` | 97 tests, including every attack from the review rounds |
 
 ## Cite
 

@@ -42,6 +42,11 @@ Each decision, why it was made, and how to reverse it. Numbers refer to the orde
 
 22. After the verdict, a read-only worker writes the prose for a public repository (title, lead, plain-English abstract, result section, description, topics). The kernel enforces the house style and assembles the folder from its own records in a fixed section order. A failed write-up never blocks the verdict. Publishing is a separate command, private by default.
 
+## Agent teams
+
+23. Three tiers of agents above the kernel: a lab director on a loop across projects, a project lead per project with an analyst, and a team for every worker stage (scout and skeptic for triage, contrarian for literature, statistician for the rule, tester for the script, code and statistics reviewers, fact-checker for the write-up). Specialists are `claude -p --agents` subagents inside their lead's sandbox; a missing finding fails the attempt.
+24. Leads act only by returning actions. The kernel applies them within the project's `[lead]` charter: approval caps and work-in-flight caps, no question whose needs wait on a project setting, one retry per question and never for an integrity block, private publishing only if allowed. The owner keeps paid compute, credentials and data accounts, project settings and charters, and anything public.
+
 ## Known limits
 
 - Analysis scripts have open network access.

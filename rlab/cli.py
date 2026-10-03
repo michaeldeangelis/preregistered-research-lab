@@ -5,6 +5,7 @@
   lab approve --root DIR --batch NAME                Mike's portfolio gate (a whole batch)
   lab approve --root DIR --ids Q-0005,Q-0012         ... or single questions
   lab publish --root DIR Q-0005 [--public]           create the GitHub repo from the question's repo/ (outward)
+  lab lead --root DIR [--dry-run]                    one project-lead cycle within the [lead] charter
   lab run     --root DIR [--once]                    move questions through their stages
   lab status  --root DIR [--json]
   lab show    --root DIR QID
@@ -26,7 +27,7 @@ from .project import init_project, load_project
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="lab", description="agentic research lab kernel")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("init", "import", "approve", "run", "status", "show", "screen-apply", "publish"):
+    for name in ("init", "import", "approve", "run", "status", "show", "screen-apply", "publish", "lead"):
         s = sub.add_parser(name)
         s.add_argument("--root", required=True, type=Path)
         if name == "init":
@@ -45,6 +46,8 @@ def main(argv: list[str] | None = None) -> int:
             s.add_argument("--json", action="store_true")
         if name == "show":
             s.add_argument("qid")
+        if name == "lead":
+            s.add_argument("--dry-run", action="store_true", help="decide but do not act (works with the lead disabled)")
         if name == "publish":
             s.add_argument("qid")
             s.add_argument("--public", action="store_true", help="default is a private repo")
@@ -91,6 +94,11 @@ def main(argv: list[str] | None = None) -> int:
         from .screen import apply, load_screen
         md = a.replacements.read_text() if a.replacements else ""
         print(json.dumps(apply(project, load_screen(a.screen_json), md, a.batch)))
+    elif a.cmd == "lead":
+        from . import lead
+        out = lead.cycle(project, dry_run=a.dry_run)
+        print(json.dumps(out, indent=1))
+        return 1 if "error" in out else 0
     elif a.cmd == "publish":
         from . import repo as RP
         q = Q.load(project, a.qid)

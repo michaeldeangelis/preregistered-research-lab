@@ -49,6 +49,7 @@ class StageCall:
     add_dirs: list[Path] = field(default_factory=list)
     sandbox: str | None = None  # sandbox-exec profile; None runs unconfined
     env: dict = field(default_factory=dict)  # extra environment (e.g. TMPDIR inside the question folder)
+    agents: dict = field(default_factory=dict)  # specialist subagents for this stage's team (--agents)
 
 
 @dataclass
@@ -84,6 +85,8 @@ def claude_worker(call: StageCall, timeout_s: int = 1800) -> WorkerResult:
         argv += ["--disallowedTools", *call.disallowed_tools]
     for d in call.add_dirs:
         argv += ["--add-dir", str(d)]
+    if call.agents:
+        argv += ["--agents", json.dumps(call.agents)]
     env = {**worker_env(), **call.env}
     argv = sandbox.wrap(argv, call.sandbox)
     try:
@@ -107,8 +110,10 @@ def claude_worker(call: StageCall, timeout_s: int = 1800) -> WorkerResult:
     return WorkerResult(True, output, cost, subtype, session_id)
 
 
-def fake_worker(responses: dict[str, Callable[[StageCall], dict]], cost: float = 0.01) -> Worker:
-    """Token-free worker: responses[stage](call) returns the structured output (and may write files)."""
+def fake_worker(responses: dict[str, Callable[[StageCall], dict]], cost: float = 0.01, team: bool = True) -> Worker:
+    """Token-free worker: responses[stage](call) returns the structured output (and may write files).
+    With team=True, a stage that has specialists (call.agents) reports one finding per specialist unless the fake
+    already returned a `team`."""
 
     def run(call: StageCall) -> WorkerResult:
         fn = responses.get(call.stage)
@@ -117,6 +122,8 @@ def fake_worker(responses: dict[str, Callable[[StageCall], dict]], cost: float =
         out = fn(call)
         if isinstance(out, WorkerResult):
             return out
+        if team and call.agents and isinstance(out, dict) and "team" not in out:
+            out = {**out, "team": [{"role": r, "finding": "consulted"} for r in call.agents]}
         return WorkerResult(True, out, cost, "success", f"fake-{call.stage}")
 
     return run

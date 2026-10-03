@@ -51,6 +51,16 @@ review = "opus"
 allow_llm_calls = false     # analysis scripts may call a language model (uses Mike's subscription)
 allow_local_logs = false    # analysis may read Mike's local Claude Code session logs
 
+[lead]
+# the project lead agent runs on the director's cycle (lab lead) and acts within this charter
+enabled = false
+max_approvals_per_cycle = 3
+max_in_flight = 6               # approved questions not yet finished
+may_requeue = true              # retry a blocked question once (never integrity blocks)
+may_park = true
+may_publish_private = false     # create private GitHub repos for finished questions
+model = "opus"
+
 [stage_budget_usd]
 triage = 0.30
 lit = 1.50
@@ -85,6 +95,7 @@ class Project:
     models: dict = field(default_factory=dict)
     stage_budget: dict = field(default_factory=dict)
     gates: dict = field(default_factory=dict)
+    lead: dict = field(default_factory=dict)
 
     @property
     def qbank(self) -> Path:
@@ -139,4 +150,5 @@ def load_project(root: Path) -> Project:
         models=dict(cfg.get("models", {})),
         stage_budget={k: float(v) for k, v in cfg.get("stage_budget_usd", {}).items()},
         gates={k: bool(v) for k, v in cfg.get("gates", {}).items()},
+        lead=dict(cfg.get("lead", {})),
     )

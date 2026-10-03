@@ -338,3 +338,31 @@ def test_approve_single_questions(tmp_path):
     assert ok == ["Q-0002"] and skipped == ["Q-0009: not found"]
     assert [q["state"] for q in Q.all_questions(project)].count("approved") == 1
     assert Q.approve_ids(project, ["Q-0002"])[1] == ["Q-0002: already approved"]
+
+
+def test_stages_run_as_teams_and_every_specialist_must_report(lab):
+    from rlab import teams
+    project, registry = lab
+    calls = _stage_calls(project, registry)
+    for stage, roles in teams.TEAMS.items():
+        for c in calls.get(stage, []):
+            assert set(c.agents) == set(roles) and "Agent" in c.allowed_tools and "consult each" in c.prompt.lower()
+    assert calls["review"][0].agents["code_reviewer"]["tools"] == ["Read", "Grep", "Glob", "Bash"]
+
+    def half_team(call):
+        out = protocol(call)
+        return {**out, "team": []}  # skipped the statistician
+
+    root2 = project.root.parent / "p2"
+    root2.mkdir()
+    init_project(root2, "p2")
+    p2 = load_project(root2)
+    p2.verify_citations = False
+    p2.llm_concurrency = p2.cpu_concurrency = 1
+    src = project.root.parent / "b2.md"
+    src.write_text("- Does citation count in year 1 predict clinical use? [type:compute]\n")
+    batch, _ = Q.import_batch(p2, src)
+    Q.approve_batch(p2, batch)
+    Kernel(p2, fake_worker({**FAKES, "protocol": half_team}), registry).run()
+    q = Q.load(p2, "Q-0001")
+    assert q["state"] == "blocked" and "statistician" in q["blocked_reason"]

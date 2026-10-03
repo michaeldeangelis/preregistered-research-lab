@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["digest", "approve", "park", "requeue", "prioritise", "publish_private", "run", "needs_mike"],
+  "properties": {
+    "digest": {"type": "string"},
+    "approve": {"type": "array", "items": {"type": "object", "required": ["id", "why"],
+      "properties": {"id": {"type": "string"}, "why": {"type": "string"}}}},
+    "park": {"type": "array", "items": {"type": "object", "required": ["id", "why"],
+      "properties": {"id": {"type": "string"}, "why": {"type": "string"}}}},
+    "requeue": {"type": "array", "items": {"type": "object", "required": ["id", "why"],
+      "properties": {"id": {"type": "string"}, "why": {"type": "string"}}}},
+    "prioritise": {"type": "array", "items": {"type": "object", "required": ["id", "value", "why"],
+      "properties": {"id": {"type": "string"}, "value": {"type": "integer", "enum": [1, 2, 3, 4, 5]}, "why": {"type": "string"}}}},
+    "publish_private": {"type": "array", "items": {"type": "object", "required": ["id"],
+      "properties": {"id": {"type": "string"}}}},
+    "run": {"type": "boolean"},
+    "needs_mike": {"type": "array", "items": {"type": "object", "required": ["item", "why"],
+      "properties": {"item": {"type": "string"}, "why": {"type": "string"}}}}
+  }
+}
