@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "required": ["answered", "grade", "summary", "sources", "contradicting", "queries"],
+  "properties": {
+    "answered": {"type": "boolean"},
+    "grade": {"type": "string", "enum": ["high", "moderate", "low", "very_low", "none"]},
+    "summary": {"type": "string"},
+    "sources": {"type": "array", "items": {"type": "object", "required": ["id", "title", "finding"],
+      "properties": {"id": {"type": "string"}, "title": {"type": "string"}, "finding": {"type": "string"}}}},
+    "contradicting": {"type": "array", "items": {"type": "string"}},
+    "queries": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "type": "object",
+  "required": [
+    "hypothesis",
+    "family",
+    "alpha",
+    "decision_rule",
+    "baselines",
+    "negative_controls",
+    "data",
+    "seeds",
+    "notes",
+    "analysis_plan"
+  ],
+  "properties": {
+    "hypothesis": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string"
+    },
+    "alpha": {
+      "type": "number"
+    },
+    "decision_rule": {
+      "type": "object",
+      "required": [
+        "metric",
+        "comparator",
+        "threshold",
+        "ci_must_exclude",
+        "min_n",
+        "null_value"
+      ],
+      "properties": {
+        "metric": {
+          "type": "string"
+        },
+        "comparator": {
+          "type": "string",
+          "enum": [
+            "gt",
+            "lt"
+          ]
+        },
+        "threshold": {
+          "type": "number"
+        },
+        "ci_must_exclude": {
+          "type": "boolean"
+        },
+        "min_n": {
+          "type": "integer"
+        },
+        "null_value": {
+          "type": "number"
+        },
+        "control_margin": {
+          "type": "number"
+        }
+      }
+    },
+    "baselines": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{0,40}$"
+      }
+    },
+    "negative_controls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{0,40}$"
+      }
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seeds": {
+      "type": "integer"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "analysis_plan": {
+      "type": "string"
+    },
+    "n_comparisons": {
+      "type": "integer"
+    }
+  }
+}

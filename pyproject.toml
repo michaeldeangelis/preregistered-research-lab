@@ -1,0 +1,12 @@
+[project]
+name = "rlab"
+version = "0.1.0"
+description = "A preregistered research lab: model workers do judgement, a kernel runs the code and decides verdicts."
+license = "MIT"
+authors = [{name = "Michael DeAngelis"}, {name = "Claude (Anthropic)"}]
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

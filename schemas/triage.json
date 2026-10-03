@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "required": ["type", "route", "reason", "prior_art", "data_sources", "cheapest_test", "test_family", "value", "feasible"],
+  "properties": {
+    "type": {"type": "string", "enum": ["lit", "compute", "ml"]},
+    "route": {"type": "string", "enum": ["proceed", "already_answered", "parked", "duplicate"]},
+    "reason": {"type": "string"},
+    "feasible": {"type": "boolean"},
+    "prior_art": {"type": "array", "items": {"type": "object", "required": ["id", "title"],
+      "properties": {"id": {"type": "string"}, "title": {"type": "string"}, "relevance": {"type": "string"}}}},
+    "data_sources": {"type": "array", "items": {"type": "string"}},
+    "cheapest_test": {"type": "string"},
+    "test_family": {"type": "string"},
+    "value": {"type": "integer", "enum": [1, 2, 3, 4, 5]},
+    "duplicate_of": {"type": "string"},
+    "evidence_grade": {"type": "string", "enum": ["high", "moderate", "low", "very_low", "none"]}
+  }
+}

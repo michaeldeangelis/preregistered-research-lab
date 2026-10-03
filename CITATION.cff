@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Preregistered research lab"
+type: software
+authors:
+  - family-names: DeAngelis
+    given-names: Michael
+  - name: "Claude (Anthropic)"
+version: 0.1.0
+date-released: "2026-10-02"
+repository-code: "https://github.com/michaeldeangelis/preregistered-research-lab"
+license: MIT
+abstract: |
+  A lab that tests a list of research questions without a person in the loop. Language-model
+  workers check the literature, write a preregistered rule, write the analysis and review it; a
+  plain Python kernel runs the code and decides each verdict from the rule, confirms passes on
+  held-out units with a split key only it holds, and corrects for testing many questions at once.
+  Workers and analyses run inside a macOS sandbox.
+keywords:
+  - research
+  - preregistration
+  - reproducibility
+  - multiple-testing
+  - agents

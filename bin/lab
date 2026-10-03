@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# research lab kernel CLI. Usage: lab --help
+set -euo pipefail
+root="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+export PYTHONPATH="$root${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 -m rlab.cli "$@"

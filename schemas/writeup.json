@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "required": ["title", "repo_name", "description", "topics", "lead", "abstract", "result_heading", "result_body",
+               "reproduce_notes", "data_acknowledgements"],
+  "properties": {
+    "title": {"type": "string"},
+    "repo_name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+    "description": {"type": "string"},
+    "topics": {"type": "array", "minItems": 4, "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,49}$"}},
+    "lead": {"type": "string"},
+    "abstract": {"type": "string"},
+    "result_heading": {"type": "string"},
+    "result_body": {"type": "string"},
+    "reproduce_notes": {"type": "string"},
+    "data_acknowledgements": {"type": "array", "items": {"type": "string"}}
+  }
+}
